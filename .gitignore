@@ -1,0 +1,40 @@
+# Compiled object files
+*.o
+*.ko
+*.obj
+*.elf
+
+# Compiled dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Compiled static libraries
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+
+# Dependency directories
+bin/
+build/
+lib/
+
+# Debugging files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+*.ipch
+*.iobj
+
+# Visual Studio Code specific files
+.vscode/
+
+# Linux specific files
+*.swp            # Vim swap files
+*.swo            # Vim session files
+*.log            # Log files
+*~               # Backup files

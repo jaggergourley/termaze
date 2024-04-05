@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
 #include "generate.h"
 #include "pathfind.h"
@@ -29,16 +31,16 @@ main program logic:
 
 */
 
-/*
-colors in terminal:
-\033[0;31m red
-\033[0;32m green
-\033[0;33m yellow
-\033[0;34m blue
-\033[0;35m magenta
-\033[0;36m cyan
-\033[0;37m white
-*/
+#define ANSI_COLOR_RED "\033[0;31m"
+#define ANSI_COLOR_GREEN "\033[0;32m"
+#define ANSI_COLOR_YELLOW "\033[0;33m"
+#define ANSI_COLOR_BLUE "\033[0;34m"
+#define ANSI_COLOR_MAGENTA "\033[0;35m"
+#define ANSI_COLOR_CYAN "\033[0;36m"
+#define ANSI_COLOR_WHITE "\033[0;37m"
+#define ANSI_COLOR_RESET "\033[0m"
+#define ROWS 21
+#define COLS 80
 
 /*
 maze:
@@ -48,13 +50,73 @@ maze:
     - 2: start point
     - 3: end point
 */
-
-#define ROWS 21
-#define COLS 80
-
 // Define maze data structure
 int maze[ROWS][COLS];
 
-void initialize_maze() {}
+// Initialize max with walls (1)
+void initialize_maze() {
+  for (int i = 0; i < ROWS; i++) {
+    for (int j = 0; j < COLS; j++) {
+      maze[i][j] = 1; // Set all cells to walls
+    }
+  }
+  maze[ROWS / 2][COLS / 2] = 2; // Set start point in middle
+}
 
-int main() { return 0; }
+void set_end_point() {
+  int side = rand() % 4; // 0: top, 1: bot, 2: left, 3: right
+
+  int row, col;
+  switch (side) {
+  case 0: // top
+    row = 0;
+    col = 1 + rand() % (COLS - 1); // 1 - (COLS-1)
+    break;
+  case 1: // bottom
+    row = ROWS - 1;
+    col = 1 + rand() % (COLS - 1); // 1 - (COLS-1)
+    break;
+  case 2:                    // left
+    row = 1 + rand() % ROWS; // 1 - (ROWS-1)
+    col = 0;
+    break;
+  case 3:                    // right
+    row = 1 + rand() % ROWS; // 1 - (ROWS-1)
+    col = COLS - 1;
+    break;
+  }
+
+  maze[row][col] = 3; // Set end point
+}
+
+void display_maze() {
+  for (int i = 0; i < ROWS; i++) {
+    for (int j = 0; j < COLS; j++) {
+      switch (maze[i][j]) {
+      case 0:
+        printf(" "); // Empty
+        break;
+      case 1:
+        printf("#"); // Wall
+        break;
+      case 2:
+        printf(ANSI_COLOR_GREEN "@" ANSI_COLOR_RESET); // Start
+        break;
+      case 3:
+        printf(ANSI_COLOR_GREEN "?" ANSI_COLOR_RESET); // End
+        break;
+      }
+    }
+    printf("\n");
+  }
+}
+
+int main() {
+  // Seed random number generator with current time
+  srand(time(NULL));
+
+  initialize_maze();
+  set_end_point();
+  display_maze();
+  return 0;
+}

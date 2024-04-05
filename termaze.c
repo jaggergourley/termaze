@@ -25,45 +25,69 @@ visualization:
     - ascii art w/ colors in terminal
     - show process of generate and pathfind
 
+input handling:
+    - allow user to select maze generation and pathfinding algos
+    - possible control other parameters like maze size, etc.
+
 main program logic:
     - coordinate generation, pathfinding, and visualization
     - user options for algorithms and visualization process
 
+utility functions:
+    - check if cell is within boundaries
+    - check is cell is on edge
+
 */
 
-#define ANSI_COLOR_RED "\033[0;31m"
-#define ANSI_COLOR_GREEN "\033[0;32m"
-#define ANSI_COLOR_YELLOW "\033[0;33m"
-#define ANSI_COLOR_BLUE "\033[0;34m"
-#define ANSI_COLOR_MAGENTA "\033[0;35m"
-#define ANSI_COLOR_CYAN "\033[0;36m"
-#define ANSI_COLOR_WHITE "\033[0;37m"
-#define ANSI_COLOR_RESET "\033[0m"
+#define ANSI_COLOR_RED "\x1b[0;31m"
+#define ANSI_COLOR_GREEN "\x1b[0;32m"
+#define ANSI_COLOR_YELLOW "\x1b[0;33m"
+#define ANSI_COLOR_BLUE "\x1b[0;34m"
+#define ANSI_COLOR_MAGENTA "\x1b[0;35m"
+#define ANSI_COLOR_CYAN "\x1b[0;36m"
+#define ANSI_COLOR_WHITE "\x1b[0;37m"
+#define ANSI_COLOR_RESET "\x1b[0m"
 #define ROWS 21
 #define COLS 80
 
-/*
-maze:
-    - 2d array where each cell is location
-    - 0: empty cell
-    - 1: wall
-    - 2: start point
-    - 3: end point
-*/
-// Define maze data structure
-int maze[ROWS][COLS];
+// Define maze cell types
+enum CellType { WALL, EMPTY, START, END };
+
+// Define a struct for a point
+typedef struct {
+  int row;
+  int col;
+} Point;
+
+// Define maze struct
+typedef struct {
+  int rows;
+  int cols;
+  enum CellType grid[ROWS][COLS];
+  Point start;
+  Point end;
+} Maze;
 
 // Initialize max with walls (1)
-void initialize_maze() {
+void initialize_maze(Maze *maze) {
+  maze->rows = ROWS;
+  maze->cols = COLS;
+  // Set start point in middle
+  maze->start.row = ROWS / 2;
+  maze->start.col = COLS / 2;
+
+  // Initialize maze grid with walls
   for (int i = 0; i < ROWS; i++) {
     for (int j = 0; j < COLS; j++) {
-      maze[i][j] = 1; // Set all cells to walls
+      maze->grid[i][j] = WALL;
     }
   }
-  maze[ROWS / 2][COLS / 2] = 2; // Set start point in middle
+
+  // Set start point on grid
+  maze->grid[maze->start.row][maze->start.col] = START;
 }
 
-void set_end_point() {
+void set_end_point(Maze *maze) {
   int side = rand() % 4; // 0: top, 1: bot, 2: left, 3: right
 
   int row, col;
@@ -86,23 +110,27 @@ void set_end_point() {
     break;
   }
 
-  maze[row][col] = 3; // Set end point
+  // Set end point
+  maze->end.row = row;
+  maze->end.col = col;
+  // Set end point on grid
+  maze->grid[maze->end.row][maze->end.col] = END;
 }
 
-void display_maze() {
-  for (int i = 0; i < ROWS; i++) {
-    for (int j = 0; j < COLS; j++) {
-      switch (maze[i][j]) {
-      case 0:
+void display_maze(const Maze *maze) {
+  for (int i = 0; i < maze->rows; i++) {
+    for (int j = 0; j < maze->cols; j++) {
+      switch (maze->grid[i][j]) {
+      case EMPTY:
         printf(" "); // Empty
         break;
-      case 1:
+      case WALL:
         printf("#"); // Wall
         break;
-      case 2:
+      case START:
         printf(ANSI_COLOR_GREEN "@" ANSI_COLOR_RESET); // Start
         break;
-      case 3:
+      case END:
         printf(ANSI_COLOR_GREEN "?" ANSI_COLOR_RESET); // End
         break;
       }
@@ -115,8 +143,10 @@ int main() {
   // Seed random number generator with current time
   srand(time(NULL));
 
-  initialize_maze();
-  set_end_point();
-  display_maze();
+  Maze maze;
+
+  initialize_maze(&maze);
+  set_end_point(&maze);
+  display_maze(&maze);
   return 0;
 }

@@ -5,10 +5,10 @@ CC = gcc
 CFLAGS = -Wall -Wextra -pedantic -std=c11
 
 # Source Files
-SRC = generate.c pathfind.c termaze.c11
+SRC = generate.c pathfind.c termaze.c
 
 # Header Files
-HDRS = generate.h pathfind.HDRS
+HDRS = generate.h pathfind.h termaze.h
 
 # Object Files
 OBJS = $(SRCS:.c=.o)

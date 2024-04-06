@@ -4,6 +4,7 @@
 
 #include "generate.h"
 #include "pathfind.h"
+#include "termaze.h"
 
 /*
 maze generation algorithms:
@@ -47,26 +48,6 @@ utility functions:
 #define ANSI_COLOR_CYAN "\x1b[0;36m"
 #define ANSI_COLOR_WHITE "\x1b[0;37m"
 #define ANSI_COLOR_RESET "\x1b[0m"
-#define ROWS 21
-#define COLS 80
-
-// Define maze cell types
-enum CellType { WALL, EMPTY, START, END };
-
-// Define a struct for a point
-typedef struct {
-  int row;
-  int col;
-} Point;
-
-// Define maze struct
-typedef struct {
-  int rows;
-  int cols;
-  enum CellType grid[ROWS][COLS];
-  Point start;
-  Point end;
-} Maze;
 
 // Initialize max with walls (1)
 void initialize_maze(Maze *maze) {
@@ -146,7 +127,9 @@ int main() {
   Maze maze;
 
   initialize_maze(&maze);
+
   set_end_point(&maze);
+  recursive_backtracking(&maze, maze.start.row, maze.start.col);
   display_maze(&maze);
   return 0;
 }

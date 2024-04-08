@@ -1,7 +1,7 @@
 #ifndef TERMAZE_H
 #define TERMAZE_H
 
-#define ROWS 21
+#define ROWS 19
 #define COLS 79
 
 // Define maze cell types

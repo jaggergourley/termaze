@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "generate.h"
 #include "pathfind.h"
@@ -48,54 +49,67 @@ utility functions:
 #define ANSI_COLOR_CYAN "\x1b[0;36m"
 #define ANSI_COLOR_WHITE "\x1b[0;37m"
 #define ANSI_COLOR_RESET "\x1b[0m"
+#define ANSI_BKGRND_BLACK "\x1b[0;40m"
+#define ANSI_BKGRND_RED "\x1b[0;41m"
+#define ANSI_BKGRND_GREEN "\x1b[0;42m"
+#define ANSI_BKGRND_YELLOW "\x1b[0;43m"
+#define ANSI_BKGRND_BLUE "\x1b[0;44m"
+#define ANSI_BKGRND_MAGENTA "\x1b[0;45m"
+#define ANSI_BKGRND_CYAN "\x1b[0;46m"
+#define ANSI_BKGRND_WHITE "\x1b[0;47m"
 
-/*
-we need to think of maze as carving through the walls
-we need nodes on every odd valued cell (odd x, odd y)
-*/
-
-// Initialize maze with walls (1)
 void initialize_maze(Maze *maze) {
   maze->rows = ROWS;
   maze->cols = COLS;
   // Set start point in middle
-  maze->start.row = ROWS / 2 - 1;
+  maze->start.row = ROWS / 2;
   maze->start.col = COLS / 2;
 
   // Initialize maze grid with walls
   for (int i = 0; i < ROWS; i++) {
     for (int j = 0; j < COLS; j++) {
       maze->grid[i][j] = WALL;
+      // Set all (odd x, odd y) as NODE for carving maze
       if (i % 2 != 0 && j % 2 != 0) {
         maze->grid[i][j] = NODE;
       }
     }
   }
-
-  // Set start point on grid
-  maze->grid[maze->start.row][maze->start.col] = START;
 }
 
 void set_end_point(Maze *maze) {
   int side = rand() % 4; // 0: top, 1: bot, 2: left, 3: right
 
   int row, col;
+  // Continue to set randomly if not reachable (blocked by WALL)
   switch (side) {
   case 0: // top
     row = 0;
-    col = 1 + rand() % (COLS - 1); // 1 - (COLS-1)
+    col = rand() % (COLS - 1);
+    while (maze->grid[row + 1][col] != EMPTY) {
+      col = rand() % (COLS - 1);
+    }
     break;
   case 1: // bottom
     row = ROWS - 1;
-    col = 1 + rand() % (COLS - 1); // 1 - (COLS-1)
+    col = 1 + rand() % (COLS - 1);
+    while (maze->grid[row - 1][col] != EMPTY) {
+      col = 1 + rand() % (COLS - 1);
+    }
     break;
-  case 2:                          // left
-    row = 1 + rand() % (ROWS - 1); // 1 - (ROWS-1)
+  case 2: // left
+    row = 1 + rand() % (ROWS - 1);
     col = 0;
+    while (maze->grid[row][col + 1] != EMPTY) {
+      row = 1 + rand() % (ROWS - 1);
+    }
     break;
-  case 3:                          // right
-    row = 1 + rand() % (ROWS - 1); // 1 - (ROWS-1)
+  case 3: // right
+    row = 1 + rand() % (ROWS - 1);
     col = COLS - 1;
+    while (maze->grid[row][col - 1] != EMPTY) {
+      row = 1 + rand() % (ROWS - 1);
+    }
     break;
   }
 
@@ -111,19 +125,19 @@ void display_maze(const Maze *maze) {
     for (int j = 0; j < maze->cols; j++) {
       switch (maze->grid[i][j]) {
       case EMPTY:
-        printf(" "); // Empty
+        printf(ANSI_BKGRND_BLACK " " ANSI_COLOR_RESET); // Empty
         break;
       case WALL:
-        printf("#"); // Wall
+        printf(ANSI_BKGRND_WHITE " " ANSI_COLOR_RESET); // Wall
         break;
       case NODE:
-        printf(" ");
+        printf(ANSI_BKGRND_RED " " ANSI_COLOR_RESET); // Node
         break;
       case START:
-        printf(ANSI_COLOR_GREEN "@" ANSI_COLOR_RESET); // Start
+        printf(ANSI_BKGRND_GREEN "@" ANSI_COLOR_RESET); // Start
         break;
       case END:
-        printf(ANSI_COLOR_GREEN "?" ANSI_COLOR_RESET); // End
+        printf(ANSI_BKGRND_GREEN "?" ANSI_COLOR_RESET); // End
         break;
       }
     }
@@ -139,8 +153,13 @@ int main() {
 
   initialize_maze(&maze);
 
-  set_end_point(&maze);
   recursive_backtracking(&maze, maze.start.row, maze.start.col);
+
+  // Set endpoint after generation to ensure that it is reachable
+  set_end_point(&maze);
+
+  // Set start point on grid
+  maze.grid[maze.start.row][maze.start.col] = START;
   display_maze(&maze);
   return 0;
 }

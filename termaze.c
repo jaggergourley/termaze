@@ -49,18 +49,26 @@ utility functions:
 #define ANSI_COLOR_WHITE "\x1b[0;37m"
 #define ANSI_COLOR_RESET "\x1b[0m"
 
-// Initialize max with walls (1)
+/*
+we need to think of maze as carving through the walls
+we need nodes on every odd valued cell (odd x, odd y)
+*/
+
+// Initialize maze with walls (1)
 void initialize_maze(Maze *maze) {
   maze->rows = ROWS;
   maze->cols = COLS;
   // Set start point in middle
-  maze->start.row = ROWS / 2;
+  maze->start.row = ROWS / 2 - 1;
   maze->start.col = COLS / 2;
 
   // Initialize maze grid with walls
   for (int i = 0; i < ROWS; i++) {
     for (int j = 0; j < COLS; j++) {
       maze->grid[i][j] = WALL;
+      if (i % 2 != 0 && j % 2 != 0) {
+        maze->grid[i][j] = NODE;
+      }
     }
   }
 
@@ -81,12 +89,12 @@ void set_end_point(Maze *maze) {
     row = ROWS - 1;
     col = 1 + rand() % (COLS - 1); // 1 - (COLS-1)
     break;
-  case 2:                    // left
-    row = 1 + rand() % ROWS; // 1 - (ROWS-1)
+  case 2:                          // left
+    row = 1 + rand() % (ROWS - 1); // 1 - (ROWS-1)
     col = 0;
     break;
-  case 3:                    // right
-    row = 1 + rand() % ROWS; // 1 - (ROWS-1)
+  case 3:                          // right
+    row = 1 + rand() % (ROWS - 1); // 1 - (ROWS-1)
     col = COLS - 1;
     break;
   }
@@ -107,6 +115,9 @@ void display_maze(const Maze *maze) {
         break;
       case WALL:
         printf("#"); // Wall
+        break;
+      case NODE:
+        printf(" ");
         break;
       case START:
         printf(ANSI_COLOR_GREEN "@" ANSI_COLOR_RESET); // Start

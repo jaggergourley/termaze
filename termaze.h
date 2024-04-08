@@ -2,10 +2,10 @@
 #define TERMAZE_H
 
 #define ROWS 21
-#define COLS 80
+#define COLS 79
 
 // Define maze cell types
-enum CellType { WALL, EMPTY, START, END };
+enum CellType { WALL, NODE, EMPTY, START, END };
 
 // Define a struct for a point
 typedef struct {

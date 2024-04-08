@@ -11,7 +11,7 @@ SRC = generate.c pathfind.c termaze.c
 HDRS = generate.h pathfind.h termaze.h
 
 # Object Files
-OBJS = $(SRCS:.c=.o)
+OBJS = $(SRC:.c=.o)
 
 # Executable Name
 EXE = termaze
@@ -20,7 +20,7 @@ EXE = termaze
 all: $(EXE)
 
 # Compile Source Files Into Object Files
-%.o: %.c $(HDRS)
+%.o: %.c $(HDRS) 
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # Link Object Files Into Executable

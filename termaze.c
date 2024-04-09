@@ -163,5 +163,6 @@ int main() {
   display_maze(&maze);
 
   dfs(&maze, maze.start.row, maze.start.col);
+  display_maze(&maze);
   return 0;
 }

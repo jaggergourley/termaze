@@ -144,6 +144,14 @@ int is_valid_cell(const Maze *maze, int row, int col) {
           col < ((maze->cols) - 1));
 }
 
+void visualization(Maze *maze) {
+  // Sleeps and clears screen before reprinting to show
+  // process of generation/pathfinding
+  usleep(10000);
+  system("clear"); // Clear screen before displaying
+  display_maze(maze);
+}
+
 int main() {
   // Seed random number generator with current time
   srand(time(NULL));
@@ -152,7 +160,8 @@ int main() {
 
   initialize_maze(&maze);
 
-  recursive_backtracking(&maze, maze.start.row, maze.start.col);
+  // recursive_backtracking(&maze, maze.start.row, maze.start.col);
+  binary_tree(&maze);
 
   // Set endpoint after generation to ensure that it is reachable
   set_end_point(&maze);
@@ -163,6 +172,6 @@ int main() {
   display_maze(&maze);
 
   dfs(&maze, maze.start.row, maze.start.col);
-  display_maze(&maze);
+  //  display_maze(&maze);
   return 0;
 }

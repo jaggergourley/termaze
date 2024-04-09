@@ -27,5 +27,6 @@ void initialize_maze(Maze *maze);
 void set_end_point(Maze *maze);
 void display_maze(const Maze *maze);
 int is_valid_cell(const Maze *maze, int row, int col);
+void visualization(Maze *maze);
 
 #endif /* TERMAZE_H */

@@ -14,15 +14,46 @@ maze generation algorithms:
     - eller's algorithm
 */
 
+// Binary tree algorithm to generate the maze
+void binary_tree(Maze *maze) {
+  // Iterate over every NODE
+  for (int i = 1; i < ROWS - 1; i += 2) {
+    for (int j = 1; j < COLS - 1; j += 2) {
+      // Mark current NODE as EMPTY
+      maze->grid[i][j] = EMPTY;
+
+      visualization(maze);
+
+      // If i and j are not in last row/col
+      if (i != ROWS - 2 && j != COLS - 2) {
+        // Randomly choose to carve right or down
+        if (rand() % 2 == 0) {
+          // Right
+          maze->grid[i][j + 1] = EMPTY;
+        } else {
+          // Down
+          maze->grid[i + 1][j] = EMPTY;
+        }
+      } else if (i != ROWS - 2) {
+        // If i is not in the last row and j is in last col
+        // Down
+        maze->grid[i + 1][j] = EMPTY;
+      } else if (j != COLS - 2) {
+        // If j is not in the last col and i is in last row
+        // Right
+        maze->grid[i][j + 1] = EMPTY;
+      }
+    }
+  }
+}
+
 // Recursive backtracking function to generate the maze
 void recursive_backtracking(Maze *maze, int row, int col) {
 
   // Mark current cell as empty
   maze->grid[row][col] = EMPTY;
 
-  // usleep(57500);
-  // system("clear"); // Clear screen before displaying
-  // display_maze(maze);
+  visualization(maze);
 
   // Define an array of directions (up, down, left, right)
   int directions[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};

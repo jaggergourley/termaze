@@ -5,7 +5,7 @@
 #define COLS 79
 
 // Define maze cell types
-enum CellType { WALL, NODE, EMPTY, START, END };
+enum CellType { EMPTY, WALL, NODE, VISITED, START, END };
 
 // Define a struct for a point
 typedef struct {
@@ -26,5 +26,6 @@ typedef struct {
 void initialize_maze(Maze *maze);
 void set_end_point(Maze *maze);
 void display_maze(const Maze *maze);
+int is_valid_cell(const Maze *maze, int row, int col);
 
 #endif /* TERMAZE_H */

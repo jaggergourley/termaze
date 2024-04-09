@@ -4,7 +4,6 @@
 #include "termaze.h"
 
 // Function prototypes
-int is_valid_cell(const Maze *maze, int row, int col);
 void recursive_backtracking(Maze *maze, int row, int col);
 
 #endif /* GENERATE_H */

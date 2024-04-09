@@ -4,6 +4,16 @@
 #include <unistd.h> // For sleep function on Unix-based
 
 #include "termaze.h"
+
+/*
+maze generation algorithms:
+    - recursive backtracking
+    - binary tree algorithm
+    - prim's algorithm
+    - kruskal's algorithm
+    - eller's algorithm
+*/
+
 /*
 recursive backtracking:
     - start at current cell
@@ -16,22 +26,15 @@ recursive backtracking:
     - define termination condition
 */
 
-int is_valid_cell(const Maze *maze, int row, int col) {
-  // Valid cell is inside the borders of the maze
-  return (row > 0 && row < ((maze->rows) - 1) && col > 0 &&
-          col < ((maze->cols) - 1));
-}
-
-// Generate maze using recursive backtracking
+// Recursive backtracking function to generate the maze
 void recursive_backtracking(Maze *maze, int row, int col) {
 
   // Mark current cell as empty
   maze->grid[row][col] = EMPTY;
 
-  usleep(12500);
-  // usleep(1000000);
-  system("clear"); // Clear screen before displaying
-  display_maze(maze);
+  // usleep(57500);
+  // system("clear"); // Clear screen before displaying
+  // display_maze(maze);
 
   // Define an array of directions (up, down, left, right)
   int directions[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};

@@ -8,21 +8,6 @@
 #include "termaze.h"
 
 /*
-maze generation algorithms:
-    - recursive backtracking
-    - binary tree algorithm
-    - prim's algorithm
-    - kruskal's algorithm
-    - eller's algorithm
-
-pathfinding algorithms:
-    - dfs
-    - bfs
-    - a*
-    - dijkstra's
-    - bellman-ford
-    - floyd-warshall
-
 visualization:
     - ascii art w/ colors in terminal
     - show process of generate and pathfind
@@ -84,31 +69,31 @@ void set_end_point(Maze *maze) {
   // Continue to set randomly if not reachable (blocked by WALL)
   switch (side) {
   case 0: // top
-    row = 0;
-    col = rand() % (COLS - 1);
-    while (maze->grid[row + 1][col] != EMPTY) {
-      col = rand() % (COLS - 1);
+    row = 1;
+    col = 1 + rand() % (COLS - 2);
+    while (maze->grid[row][col] != EMPTY) {
+      col = 1 + rand() % (COLS - 2);
     }
     break;
   case 1: // bottom
-    row = ROWS - 1;
-    col = 1 + rand() % (COLS - 1);
-    while (maze->grid[row - 1][col] != EMPTY) {
-      col = 1 + rand() % (COLS - 1);
+    row = ROWS - 2;
+    col = 1 + rand() % (COLS - 2);
+    while (maze->grid[row][col] != EMPTY) {
+      col = 1 + rand() % (COLS - 2);
     }
     break;
   case 2: // left
-    row = 1 + rand() % (ROWS - 1);
-    col = 0;
-    while (maze->grid[row][col + 1] != EMPTY) {
-      row = 1 + rand() % (ROWS - 1);
+    row = 1 + rand() % (ROWS - 2);
+    col = 1;
+    while (maze->grid[row][col] != EMPTY) {
+      row = 1 + rand() % (ROWS - 2);
     }
     break;
   case 3: // right
-    row = 1 + rand() % (ROWS - 1);
-    col = COLS - 1;
-    while (maze->grid[row][col - 1] != EMPTY) {
-      row = 1 + rand() % (ROWS - 1);
+    row = 1 + rand() % (ROWS - 2);
+    col = COLS - 2;
+    while (maze->grid[row][col] != EMPTY) {
+      row = 1 + rand() % (ROWS - 2);
     }
     break;
   }
@@ -121,6 +106,10 @@ void set_end_point(Maze *maze) {
 }
 
 void display_maze(const Maze *maze) {
+
+  // Clear the screen
+  // printf("\x1b[2J");
+
   for (int i = 0; i < maze->rows; i++) {
     for (int j = 0; j < maze->cols; j++) {
       switch (maze->grid[i][j]) {
@@ -133,6 +122,9 @@ void display_maze(const Maze *maze) {
       case NODE:
         printf(ANSI_BKGRND_RED " " ANSI_COLOR_RESET); // Node
         break;
+      case VISITED:
+        printf(ANSI_BKGRND_GREEN " " ANSI_COLOR_RESET); // Visited
+        break;
       case START:
         printf(ANSI_BKGRND_GREEN "@" ANSI_COLOR_RESET); // Start
         break;
@@ -143,6 +135,13 @@ void display_maze(const Maze *maze) {
     }
     printf("\n");
   }
+  // fflush(stdout);
+}
+
+int is_valid_cell(const Maze *maze, int row, int col) {
+  // Valid cell is inside the borders of the maze
+  return (row > 0 && row < ((maze->rows) - 1) && col > 0 &&
+          col < ((maze->cols) - 1));
 }
 
 int main() {
@@ -160,6 +159,9 @@ int main() {
 
   // Set start point on grid
   maze.grid[maze.start.row][maze.start.col] = START;
+  system("clear"); // Clear screen before displaying
   display_maze(&maze);
+
+  dfs(&maze, maze.start.row, maze.start.col);
   return 0;
 }

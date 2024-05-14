@@ -13,6 +13,11 @@ typedef struct {
   int col;
 } Point;
 
+typedef struct {
+  Point cell1;
+  Point cell2;
+} Edge;
+
 // Define maze struct
 typedef struct {
   int rows;

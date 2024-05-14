@@ -9,8 +9,8 @@
 maze generation algorithms:
     - recursive backtracking
     - binary tree algorithm
-    - prim's algorithm
-    - kruskal's algorithm
+    - prim's algorithm (randomized)
+    - kruskal's algorithm (randomized)
     - eller's algorithm
 */
 
@@ -81,5 +81,59 @@ void recursive_backtracking(Maze *maze, int row, int col) {
       maze->grid[row + directions[i][0]][col + directions[i][1]] = EMPTY;
       recursive_backtracking(maze, nextRow, nextCol);
     }
+  }
+}
+
+void add_edges(Maze *maze, Point cell, Edge edges[], int *edge_count) {
+  int directions[4][2] = {{0, 2}, {0, -2}, {2, 0}, {-2, 0}};
+  for (int i = 0; i < 4; i++) {
+    int nextRow = cell.row + directions[i][0];
+    int nextCol = cell.col + directions[i][1];
+
+    if (is_valid_cell(maze, nextRow, nextCol)) {
+      edges[(*edge_count)++] = (Edge){cell, {nextRow, nextCol}};
+    }
+  }
+}
+
+void remove_edge(Edge edges[], int *edge_count, int index) {
+  edges[index] = edges[--(*edge_count)];
+}
+
+void prims(Maze *maze) {
+
+  Point start = {maze->start.row, maze->start.col};
+  // Mark start cell as empty
+  maze->grid[start.row][start.col] = EMPTY;
+
+  Edge edges[ROWS * COLS];
+  int edge_count = 0;
+  add_edges(maze, start, edges, &edge_count);
+
+  while (edge_count > 0) {
+
+    visualization(maze);
+
+    int rand_index = rand() % edge_count;
+    Edge edge = edges[rand_index];
+
+    Point cell1 = edge.cell1;
+    Point cell2 = edge.cell2;
+
+    if (maze->grid[cell1.row][cell1.col] == EMPTY &&
+        maze->grid[cell2.row][cell2.col] == NODE) {
+      maze->grid[cell2.row][cell2.col] = EMPTY;
+      maze->grid[(cell1.row + cell2.row) / 2][(cell1.col + cell2.col) / 2] =
+          EMPTY;
+      add_edges(maze, cell2, edges, &edge_count);
+    } else if (maze->grid[cell2.row][cell2.col] == EMPTY &&
+               maze->grid[cell1.row][cell1.col] == NODE) {
+      maze->grid[cell1.row][cell1.col] = EMPTY;
+      maze->grid[(cell1.row + cell2.row) / 2][(cell1.col + cell2.col) / 2] =
+          EMPTY;
+      add_edges(maze, cell1, edges, &edge_count);
+    }
+
+    remove_edge(edges, &edge_count, rand_index);
   }
 }

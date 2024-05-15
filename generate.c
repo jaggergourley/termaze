@@ -84,13 +84,18 @@ void recursive_backtracking(Maze *maze, int row, int col) {
   }
 }
 
-void add_edges(Maze *maze, Point cell, Edge edges[], int *edge_count) {
+void add_edges_prim(Maze *maze, Point cell, Edge edges[], int *edge_count) {
+  // Directions of movement to next NODE
   int directions[4][2] = {{0, 2}, {0, -2}, {2, 0}, {-2, 0}};
+
+  // Add each NODE from all four directions of current cell
   for (int i = 0; i < 4; i++) {
     int nextRow = cell.row + directions[i][0];
     int nextCol = cell.col + directions[i][1];
 
     if (is_valid_cell(maze, nextRow, nextCol)) {
+      // If a valid cell, form edge between current cell and cell in given
+      // direction
       edges[(*edge_count)++] = (Edge){cell, {nextRow, nextCol}};
     }
   }
@@ -100,40 +105,191 @@ void remove_edge(Edge edges[], int *edge_count, int index) {
   edges[index] = edges[--(*edge_count)];
 }
 
-void prims(Maze *maze) {
+// Randomlize Prim's algorithm which selects random edge from set to carve maze
+void prim(Maze *maze) {
 
   Point start = {maze->start.row, maze->start.col};
   // Mark start cell as empty
   maze->grid[start.row][start.col] = EMPTY;
 
+  // Initialize list of edges
   Edge edges[ROWS * COLS];
   int edge_count = 0;
-  add_edges(maze, start, edges, &edge_count);
+  // Add edges of start cell to list
+  add_edges_prim(maze, start, edges, &edge_count);
 
   while (edge_count > 0) {
 
     visualization(maze);
 
+    // Randomly select an edge from the list
     int rand_index = rand() % edge_count;
     Edge edge = edges[rand_index];
 
+    // Get the two cells connected by this edge
     Point cell1 = edge.cell1;
     Point cell2 = edge.cell2;
 
+    // Check if one cell is EMPTY and the other is a NODE
     if (maze->grid[cell1.row][cell1.col] == EMPTY &&
         maze->grid[cell2.row][cell2.col] == NODE) {
+      // Make NODE cell EMPTY
       maze->grid[cell2.row][cell2.col] = EMPTY;
+      // Remove wall between the NODE cells
       maze->grid[(cell1.row + cell2.row) / 2][(cell1.col + cell2.col) / 2] =
           EMPTY;
-      add_edges(maze, cell2, edges, &edge_count);
+      // Add the new cell's edge to the list
+      add_edges_prim(maze, cell2, edges, &edge_count);
+      // Same as before if opposite situation
     } else if (maze->grid[cell2.row][cell2.col] == EMPTY &&
                maze->grid[cell1.row][cell1.col] == NODE) {
       maze->grid[cell1.row][cell1.col] = EMPTY;
       maze->grid[(cell1.row + cell2.row) / 2][(cell1.col + cell2.col) / 2] =
           EMPTY;
-      add_edges(maze, cell1, edges, &edge_count);
+      add_edges_prim(maze, cell1, edges, &edge_count);
     }
 
+    // Remove the edge from the list
     remove_edge(edges, &edge_count, rand_index);
   }
+}
+
+void add_edges_kruskals(Maze *maze, Edge edges[], int *edge_count) {
+  // Iterate through NODE cells to create all possible edges
+  for (int i = 1; i < ROWS; i += 2) {
+    for (int j = 1; j < COLS; j += 2) {
+      // Add to edges while in bounds between current cell and next in row
+      if (i + 2 < ROWS) {
+        edges[(*edge_count)++] = (Edge){{i, j}, {i + 2, j}};
+      }
+      // Add to edges while in bounds between current cell and next in col
+      if (j + 2 < COLS) {
+        edges[(*edge_count)++] = (Edge){{i, j}, {i, j + 2}};
+      }
+    }
+  }
+}
+
+// Find the root a set containing i
+int find(UnionFind *uf, int i) {
+  // Path compression, point directly to the root
+  if (uf->parent[i] != i) {
+    uf->parent[i] = find(uf, uf->parent[i]);
+  }
+  return uf->parent[i];
+}
+
+// Merge two sets containing i and j
+void union_sets(UnionFind *uf, int i, int j) {
+  // Find the roots of the sets
+  int ri = find(uf, i);
+  int rj = find(uf, j);
+
+  // Union by rank, attach samller tree to larger tree
+  if (ri != rj) {
+    if (uf->rank[ri] > uf->rank[rj]) {
+      uf->parent[rj] = ri;
+    } else if (uf->rank[ri] < uf->rank[rj]) {
+      uf->parent[ri] = rj;
+    } else {
+      uf->parent[rj] = ri;
+      uf->rank[ri]++;
+    }
+  }
+}
+
+// Randomly shuffle list of edges to make generation random
+void shuffle_edges(Edge edges[], int edge_count) {
+  for (int i = edge_count - 1; i > 0; --i) {
+    int j = rand() % (i + 1);
+    Edge temp = edges[i];
+    edges[i] = edges[j];
+    edges[j] = temp;
+  }
+}
+
+void kruskal(Maze *maze) {
+
+  // Initialize edges
+  Edge edges[ROWS * COLS];
+  int edge_count = 0;
+  add_edges_kruskals(maze, edges, &edge_count);
+  shuffle_edges(edges, edge_count);
+
+  // Initialize union-find structure
+  UnionFind uf;
+  for (int i = 0; i < ROWS * COLS; i++) {
+    // Each set to its own parents, rank 0
+    uf.parent[i] = i;
+    uf.rank[i] = 0;
+  }
+
+  for (int i = 0; i < edge_count; ++i) {
+    Point cell1 = edges[i].cell1;
+    Point cell2 = edges[i].cell2;
+    int index1 = cell1.row * COLS + cell1.col; // Convert 2D to 1D index
+    int index2 = cell2.row * COLS + cell2.col;
+
+    // Check if two cells connected by the edge are in different sets
+    if (find(&uf, index1) != find(&uf, index2)) {
+
+      visualization(maze);
+
+      // Connect the cells and union the sets
+      maze->grid[cell1.row][cell1.col] = EMPTY;
+      maze->grid[cell2.row][cell2.col] = EMPTY;
+      maze->grid[(cell1.row + cell2.row) / 2][(cell1.col + cell2.col) / 2] =
+          EMPTY;
+      union_sets(&uf, index1, index2);
+    }
+  }
+}
+
+void join_sets(int set[], int size, int cell1, int cell2) {
+  int set1 = find_set(set, size, cell1);
+  int set2 = find_set(set, size, cell2);
+  for (int i = 0; i < size; ++i) {
+    if (set[i] == set2) {
+      set[i] = set1;
+    }
+  }
+}
+
+int find_set(int set[], int size, int cell) { return set[cell]; }
+
+void create_vertical_connections(Maze *maze, int set[], int size, int row) {}
+
+void finalize_maze(Maze *maze, int set[], int size, int row) {}
+
+void eller(Maze *maze) {
+  int set[COLS];
+  for (int i = 0; i < COLS; ++i) {
+    set[i] = i; // Each cell in first row starts in its own set
+  }
+
+  for (int row = 1; row < ROWS; row += 2) {
+    // Join adjacent cells in current row
+    for (int col = 1; col < COLS - 2; col += 2) {
+      if (rand() % 2 == 0 &&
+          find_set(set, COLS, col) != find_set(set, COLS, col + 2)) {
+        maze->grid[row][col + 1] = EMPTY;
+        join_sets(set, COLS, col, col + 2);
+      }
+    }
+
+    // Create vert connections to next row
+    create_vertical_connections(maze, set, COLS, row);
+
+    // Prepare set array for next row
+    for (int col = 1; col < COLS; col += 2) {
+      if (maze->grid[row + 1][col] == EMPTY) {
+        set[col] = set[col - 2];
+      } else {
+        set[col] = col + row * COLS;
+      }
+    }
+  }
+
+  // Finalize maze for last row
+  finalize_maze(maze, set, COLS, ROWS - 2);
 }

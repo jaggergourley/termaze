@@ -13,10 +13,18 @@ typedef struct {
   int col;
 } Point;
 
+// Define Edge as two cells
 typedef struct {
   Point cell1;
   Point cell2;
 } Edge;
+
+typedef struct {
+  // Parent of each element
+  int parent[ROWS * COLS];
+  // Depth of trees
+  int rank[ROWS * COLS];
+} UnionFind;
 
 // Define maze struct
 typedef struct {

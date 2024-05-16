@@ -154,7 +154,7 @@ void prim(Maze *maze) {
   }
 }
 
-void add_edges_kruskals(Maze *maze, Edge edges[], int *edge_count) {
+void add_edges_kruskals(Edge edges[], int *edge_count) {
   // Iterate through NODE cells to create all possible edges
   for (int i = 1; i < ROWS; i += 2) {
     for (int j = 1; j < COLS; j += 2) {
@@ -208,12 +208,13 @@ void shuffle_edges(Edge edges[], int edge_count) {
   }
 }
 
+// Randomized Kruskal's algorithm selecting random edges to carve maze
 void kruskal(Maze *maze) {
 
   // Initialize edges
   Edge edges[ROWS * COLS];
   int edge_count = 0;
-  add_edges_kruskals(maze, edges, &edge_count);
+  add_edges_kruskals(edges, &edge_count);
   shuffle_edges(edges, edge_count);
 
   // Initialize union-find structure
@@ -245,51 +246,103 @@ void kruskal(Maze *maze) {
   }
 }
 
-void join_sets(int set[], int size, int cell1, int cell2) {
-  int set1 = find_set(set, size, cell1);
-  int set2 = find_set(set, size, cell2);
-  for (int i = 0; i < size; ++i) {
+int find_set(int set[], int cell) {
+  // Return identifier for given cell
+  return set[cell];
+}
+
+void join_sets(int set[], int cell1, int cell2) {
+  // Merge two sets by updating set array
+  // Ensure all cells in same set have the same identifier
+  int set1 = find_set(set, cell1);
+  int set2 = find_set(set, cell2);
+  for (int i = 0; i < COLS; i++) {
     if (set[i] == set2) {
       set[i] = set1;
     }
   }
 }
 
-int find_set(int set[], int size, int cell) { return set[cell]; }
+void create_vertical_connections(Maze *maze, int set[], int row) {
+  // Ensure each set has at least one vertical connection to the next row
 
-void create_vertical_connections(Maze *maze, int set[], int size, int row) {}
+  // size == COLS
+  int connections[COLS] = {0};
 
-void finalize_maze(Maze *maze, int set[], int size, int row) {}
+  // For each NODE cell in the row
+  for (int col = 1; col < COLS; col += 2) {
+    // Randomly create vertical passage
+    if (rand() % 2 == 0 || connections[find_set(set, col)] == 0) {
+      maze->grid[row + 1][col] = EMPTY;
+      // Mark set as connected
+      connections[find_set(set, col)] = 1;
+    }
+  }
+}
+
+void finalize_maze(Maze *maze, int set[], int row) {
+  // Ensure last row is fully connected
+  // Iterate through cols in last row
+  for (int col = 1; col < COLS - 1; col += 2) {
+    if (find_set(set, col) != find_set(set, col + 2)) {
+      // Create horizontal passage
+      maze->grid[row][col + 1] = EMPTY;
+      // Merge sets
+      join_sets(set, col, col + 2);
+    }
+  }
+}
 
 void eller(Maze *maze) {
+
+  // set represents a group of connected cells, each cell belongs to a set
   int set[COLS];
-  for (int i = 0; i < COLS; ++i) {
-    set[i] = i; // Each cell in first row starts in its own set
+
+  for (int i = 0; i < COLS; i++) {
+    // Each cell in first row starts in its own set (initally isolated)
+    set[i] = i;
   }
 
+  // Iterate through all rows where NODE cell are present
   for (int row = 1; row < ROWS; row += 2) {
-    // Join adjacent cells in current row
-    for (int col = 1; col < COLS - 2; col += 2) {
-      if (rand() % 2 == 0 &&
-          find_set(set, COLS, col) != find_set(set, COLS, col + 2)) {
+
+    // Join adjacent cells in current row by iterating through all columns
+    for (int col = 1; col < COLS - 1; col += 2) {
+
+      // visualization(maze);
+      //   Set current NODE to EMPTY
+      maze->grid[row][col] = EMPTY;
+
+      // Randomly decide where to join adjacent cell (create horizonal passage)
+      if (rand() % 2 == 0 && find_set(set, col) != find_set(set, col + 2)) {
+        // Create passage horizonally
         maze->grid[row][col + 1] = EMPTY;
-        join_sets(set, COLS, col, col + 2);
+        // Only merge sets that are not already in the same set to avoid cycles
+        join_sets(set, col, col + 2);
       }
     }
 
-    // Create vert connections to next row
-    create_vertical_connections(maze, set, COLS, row);
+    // Handle last cell in row separately
+    if (row < ROWS - 2) {
+      maze->grid[row][COLS - 2] = EMPTY;
+    }
 
-    // Prepare set array for next row
+    // Create vertical connections to next row, passing the set array
+    create_vertical_connections(maze, set, row);
+
+    // Prepare set array for next row, move to next row
     for (int col = 1; col < COLS; col += 2) {
+      // Update set array for new row, maintain connections from previous row
       if (maze->grid[row + 1][col] == EMPTY) {
+        // Inherit set identifier from previous col
         set[col] = set[col - 2];
       } else {
+        // New set identifier
         set[col] = col + row * COLS;
       }
     }
   }
 
   // Finalize maze for last row
-  finalize_maze(maze, set, COLS, ROWS - 2);
+  finalize_maze(maze, set, ROWS - 2);
 }

@@ -164,6 +164,7 @@ int main() {
   //  binary_tree(&maze);
   // prim(&maze);
   kruskal(&maze);
+  // eller(&maze);
 
   // Set endpoint after generation to ensure that it is reachable
   set_end_point(&maze);

@@ -19,10 +19,4 @@ void union_sets(UnionFind *uf, int i, int j);
 void shuffle_edges(Edge edges[], int edge_count);
 void kruskal(Maze *maze);
 
-int find_set(int set[], int cell);
-void join_sets(int set[], int cell1, int cell2);
-void create_vertical_connections(Maze *maze, int set[], int row);
-void finalize_maze(Maze *maze, int set[], int row);
-void eller(Maze *maze);
-
 #endif /* GENERATE_H */

@@ -1,5 +1,8 @@
+#include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 
+#include "pathfind.h"
 #include "termaze.h"
 
 int endpoint_found = 0;
@@ -8,10 +11,6 @@ int endpoint_found = 0;
 pathfinding algorithms:
     - dfs
     - bfs
-    - a*
-    - dijkstra's
-    - bellman-ford
-    - floyd-warshall
 */
 
 // Recusive depth first search to solve the maze
@@ -61,4 +60,74 @@ void dfs(Maze *maze, int row, int col) {
       }
     }
   }
+}
+
+Queue *create_queue(int capacity) {
+  Queue *queue = (Queue *)malloc(sizeof(Queue));
+  queue->capacity = capacity;
+  queue->front = queue->size = 0;
+  queue->rear = capacity - 1;
+  queue->data = (Node *)malloc(queue->capacity * sizeof(Node));
+  return queue;
+}
+
+bool is_full(Queue *queue) { return (queue->size == queue->capacity); }
+
+bool is_empty(Queue *queue) { return (queue->size == 0); }
+
+void enqueue(Queue *queue, Node item) {
+  if (is_full(queue))
+    return;
+  queue->rear = (queue->rear + 1) % queue->capacity;
+  queue->data[queue->rear] = item;
+  queue->size = queue->size + 1;
+}
+
+Node dequeue(Queue *queue) {
+  if (is_empty(queue))
+    exit(EXIT_FAILURE);
+  Node item = queue->data[queue->front];
+  queue->front = (queue->front + 1) % queue->capacity;
+  queue->size = queue->size - 1;
+  return item;
+}
+
+void bfs(Maze *maze) {
+  int directions[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+  int found = 0;
+
+  Queue *queue = create_queue(ROWS * COLS);
+  Node start_node = {maze->start, {-1, -1}};
+  enqueue(queue, start_node);
+
+  maze->grid[maze->start.row][maze->start.col] = VISITED;
+  visualization(maze);
+
+  while (!is_empty(queue) && !found) {
+
+    Node current = dequeue(queue);
+    Point currentPoint = current.point;
+
+    for (int i = 0; i < 4; i++) {
+      int nextRow = currentPoint.row + directions[i][0];
+      int nextCol = currentPoint.col + directions[i][1];
+
+      if (nextRow == maze->end.row && nextCol == maze->end.col) {
+        found = 1;
+        break;
+      }
+
+      if (is_valid_cell(maze, nextRow, nextCol) &&
+          maze->grid[nextRow][nextCol] == EMPTY) {
+        maze->grid[nextRow][nextCol] = VISITED;
+        Node nextNode = {{nextRow, nextCol}, currentPoint};
+        enqueue(queue, nextNode);
+
+        visualization(maze);
+      }
+    }
+  }
+
+  free(queue->data);
+  free(queue);
 }

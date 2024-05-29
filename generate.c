@@ -7,11 +7,10 @@
 
 /*
 maze generation algorithms:
-    - recursive backtracking
     - binary tree algorithm
+    - recursive backtracking
     - prim's algorithm (randomized)
     - kruskal's algorithm (randomized)
-    - eller's algorithm
 */
 
 // Binary tree algorithm to generate the maze

@@ -160,10 +160,10 @@ int main() {
 
   initialize_maze(&maze);
 
-  // recursive_backtracking(&maze, maze.start.row, maze.start.col);
-  //  binary_tree(&maze);
+  recursive_backtracking(&maze, maze.start.row, maze.start.col);
+  // binary_tree(&maze);
   // prim(&maze);
-  kruskal(&maze);
+  // kruskal(&maze);
 
   // Set endpoint after generation to ensure that it is reachable
   set_end_point(&maze);
@@ -173,7 +173,8 @@ int main() {
   system("clear"); // Clear screen before displaying
   display_maze(&maze);
 
-  dfs(&maze, maze.start.row, maze.start.col);
+  // dfs(&maze, maze.start.row, maze.start.col);
+  bfs(&maze);
   //  display_maze(&maze);
   return 0;
 }

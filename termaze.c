@@ -1,3 +1,4 @@
+#include <ncurses.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -114,28 +115,26 @@ void display_maze(const Maze *maze) {
     for (int j = 0; j < maze->cols; j++) {
       switch (maze->grid[i][j]) {
       case EMPTY:
-        printf(ANSI_BKGRND_BLACK " " ANSI_COLOR_RESET); // Empty
+        mvprintw(i, j, ANSI_BKGRND_BLACK " " ANSI_COLOR_RESET); // Empty
         break;
       case WALL:
-        printf(ANSI_BKGRND_WHITE " " ANSI_COLOR_RESET); // Wall
+        mvprintw(i, j, ANSI_BKGRND_WHITE " " ANSI_COLOR_RESET); // Wall
         break;
       case NODE:
-        printf(ANSI_BKGRND_RED " " ANSI_COLOR_RESET); // Node
+        mvprintw(i, j, ANSI_BKGRND_RED " " ANSI_COLOR_RESET); // Node
         break;
       case VISITED:
-        printf(ANSI_BKGRND_GREEN " " ANSI_COLOR_RESET); // Visited
+        mvprintw(i, j, ANSI_BKGRND_GREEN " " ANSI_COLOR_RESET); // Visited
         break;
       case START:
-        printf(ANSI_BKGRND_GREEN "@" ANSI_COLOR_RESET); // Start
+        mvprintw(i, j, ANSI_BKGRND_GREEN "@" ANSI_COLOR_RESET); // Start
         break;
       case END:
-        printf(ANSI_BKGRND_GREEN "?" ANSI_COLOR_RESET); // End
+        mvprintw(i, j, ANSI_BKGRND_GREEN "?" ANSI_COLOR_RESET); // End
         break;
       }
     }
-    printf("\n");
   }
-  // fflush(stdout);
 }
 
 int is_valid_cell(const Maze *maze, int row, int col) {
@@ -147,8 +146,8 @@ int is_valid_cell(const Maze *maze, int row, int col) {
 void visualization(Maze *maze) {
   // Sleeps and clears screen before reprinting to show
   // process of generation/pathfinding
-  usleep(10000);
-  system("clear"); // Clear screen before displaying
+  usleep(15000);
+  refresh();
   display_maze(maze);
 }
 
@@ -158,12 +157,54 @@ int main() {
 
   Maze maze;
 
-  initialize_maze(&maze);
+  initscr();
+  noecho();
+  curs_set(FALSE);
 
-  recursive_backtracking(&maze, maze.start.row, maze.start.col);
-  // binary_tree(&maze);
-  // prim(&maze);
-  // kruskal(&maze);
+  initialize_maze(&maze);
+  display_maze(&maze);
+
+  char generate;
+  int valid = 0;
+
+  while (!valid) {
+    mvprintw(0, ROWS + 1, "Select the maze generation algorithm:\n");
+    mvprintw(0, ROWS + 2, "B/b: Binary Tree, ");
+    mvprintw(20, ROWS + 2, "R/r: Resursive Backtracking,\n");
+    mvprintw(0, ROWS + 3, "P/p: Prim's Algorithm, ");
+    mvprintw(20, ROWS + 3, "K/k: Kruskal's Algorithm\n");
+    mvprintw(0, ROWS + 4, "Make your choice and press enter: ");
+
+    generate = getchar();
+    while (getchar() != '\n')
+      ;
+
+    switch (generate) {
+    case 'B':
+    case 'b':
+      binary_tree(&maze);
+      valid = 1;
+      break;
+    case 'R':
+    case 'r':
+      recursive_backtracking(&maze, maze.start.row, maze.start.col);
+      valid = 1;
+      break;
+    case 'P':
+    case 'p':
+      prim(&maze);
+      valid = 1;
+      break;
+    case 'K':
+    case 'k':
+      kruskal(&maze);
+      valid = 1;
+      break;
+    default:
+      mvprintw(0, ROWS + 5, "Invalid Choice\n");
+      break;
+    }
+  }
 
   // Set endpoint after generation to ensure that it is reachable
   set_end_point(&maze);
@@ -173,8 +214,38 @@ int main() {
   system("clear"); // Clear screen before displaying
   display_maze(&maze);
 
-  // dfs(&maze, maze.start.row, maze.start.col);
-  bfs(&maze);
-  //  display_maze(&maze);
+  char pathfind;
+  valid = 0;
+
+  while (!valid) {
+    mvprintw(0, ROWS + 1, "Select the maze pathfinding algorithm:\n");
+    mvprintw(0, ROWS + 2, "B/b: Breadth First Search, ");
+    mvprintw(20, ROWS + 2, "D/d: Depth First Search\n");
+    mvprintw(0, ROWS + 3, "Make your choice and press enter: ");
+
+    pathfind = getchar();
+    while (getchar() != '\n')
+      ;
+
+    switch (pathfind) {
+    case 'B':
+    case 'b':
+      bfs(&maze);
+      valid = 1;
+      break;
+    case 'D':
+    case 'd':
+      dfs(&maze, maze.start.row, maze.start.col);
+      valid = 1;
+      break;
+    default:
+      mvprintw(0, ROWS + 4, "Invalid Choice\n");
+      break;
+    }
+  }
+
+  refresh();
+  display_maze(&maze);
+  endwin();
   return 0;
 }

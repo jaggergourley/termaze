@@ -25,7 +25,7 @@ all: $(EXE)
 
 # Link Object Files Into Executable
 $(EXE): $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) -o $(EXE)
+	$(CC) $(CFLAGS) $(OBJS) -o $(EXE) -lncurses
 
 # Clean Target
 clean:

@@ -4,6 +4,8 @@
 #define ROWS 19
 #define COLS 79
 
+#include <unistd.h>
+
 // Define maze cell types
 enum CellType { EMPTY, WALL, NODE, VISITED, START, END };
 

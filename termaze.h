@@ -38,6 +38,7 @@ typedef struct {
 } Maze;
 
 // Function prototypes
+void init_ncurses();
 void initialize_maze(Maze *maze);
 void set_end_point(Maze *maze);
 void display_maze(const Maze *maze);

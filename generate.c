@@ -5,14 +5,6 @@
 
 #include "termaze.h"
 
-/*
-maze generation algorithms:
-    - binary tree algorithm
-    - recursive backtracking
-    - prim's algorithm (randomized)
-    - kruskal's algorithm (randomized)
-*/
-
 // Binary tree algorithm to generate the maze
 void binary_tree(Maze *maze) {
   // Iterate over every NODE

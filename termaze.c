@@ -8,42 +8,6 @@
 #include "pathfind.h"
 #include "termaze.h"
 
-/*
-visualization:
-    - ascii art w/ colors in terminal
-    - show process of generate and pathfind
-
-input handling:
-    - allow user to select maze generation and pathfinding algos
-    - possible control other parameters like maze size, etc.
-
-main program logic:
-    - coordinate generation, pathfinding, and visualization
-    - user options for algorithms and visualization process
-
-utility functions:
-    - check if cell is within boundaries
-    - check is cell is on edge
-
-*/
-
-#define ANSI_COLOR_RED "\x1b[0;31m"
-#define ANSI_COLOR_GREEN "\x1b[0;32m"
-#define ANSI_COLOR_YELLOW "\x1b[0;33m"
-#define ANSI_COLOR_BLUE "\x1b[0;34m"
-#define ANSI_COLOR_MAGENTA "\x1b[0;35m"
-#define ANSI_COLOR_CYAN "\x1b[0;36m"
-#define ANSI_COLOR_WHITE "\x1b[0;37m"
-#define ANSI_COLOR_RESET "\x1b[0m"
-#define ANSI_BKGRND_BLACK "\x1b[0;40m"
-#define ANSI_BKGRND_RED "\x1b[0;41m"
-#define ANSI_BKGRND_GREEN "\x1b[0;42m"
-#define ANSI_BKGRND_YELLOW "\x1b[0;43m"
-#define ANSI_BKGRND_BLUE "\x1b[0;44m"
-#define ANSI_BKGRND_MAGENTA "\x1b[0;45m"
-#define ANSI_BKGRND_CYAN "\x1b[0;46m"
-#define ANSI_BKGRND_WHITE "\x1b[0;47m"
-
 void initialize_maze(Maze *maze) {
   maze->rows = ROWS;
   maze->cols = COLS;
@@ -107,34 +71,45 @@ void set_end_point(Maze *maze) {
 }
 
 void display_maze(const Maze *maze) {
-
-  // Clear the screen
-  // printf("\x1b[2J");
+  clear(); // Clear the screen
 
   for (int i = 0; i < maze->rows; i++) {
     for (int j = 0; j < maze->cols; j++) {
       switch (maze->grid[i][j]) {
       case EMPTY:
-        mvprintw(i, j, ANSI_BKGRND_BLACK " " ANSI_COLOR_RESET); // Empty
+        attron(COLOR_PAIR(2));
+        mvprintw(i, j, " "); // Empty
+        attroff(COLOR_PAIR(2));
         break;
       case WALL:
-        mvprintw(i, j, ANSI_BKGRND_WHITE " " ANSI_COLOR_RESET); // Wall
+        attron(COLOR_PAIR(1));
+        mvprintw(i, j, " "); // Wall
+        attroff(COLOR_PAIR(1));
         break;
       case NODE:
-        mvprintw(i, j, ANSI_BKGRND_RED " " ANSI_COLOR_RESET); // Node
+        attron(COLOR_PAIR(3));
+        mvprintw(i, j, " "); // Node
+        attroff(COLOR_PAIR(3));
         break;
       case VISITED:
-        mvprintw(i, j, ANSI_BKGRND_GREEN " " ANSI_COLOR_RESET); // Visited
+        attron(COLOR_PAIR(4));
+        mvprintw(i, j, " "); // Visited
+        attroff(COLOR_PAIR(4));
         break;
       case START:
-        mvprintw(i, j, ANSI_BKGRND_GREEN "@" ANSI_COLOR_RESET); // Start
+        attron(COLOR_PAIR(5));
+        mvprintw(i, j, "@"); // Start
+        attroff(COLOR_PAIR(5));
         break;
       case END:
-        mvprintw(i, j, ANSI_BKGRND_GREEN "?" ANSI_COLOR_RESET); // End
+        attron(COLOR_PAIR(5));
+        mvprintw(i, j, "?"); // End
+        attroff(COLOR_PAIR(5));
         break;
       }
     }
   }
+  refresh(); // Refresh the screen
 }
 
 int is_valid_cell(const Maze *maze, int row, int col) {
@@ -144,108 +119,132 @@ int is_valid_cell(const Maze *maze, int row, int col) {
 }
 
 void visualization(Maze *maze) {
-  // Sleeps and clears screen before reprinting to show
-  // process of generation/pathfinding
-  usleep(15000);
-  refresh();
+  usleep(57500); // Sleep before reprinting
   display_maze(maze);
 }
 
+void init_ncurses() {
+  initscr();
+  noecho();
+  start_color();
+  curs_set(FALSE);
+
+  init_pair(1, COLOR_WHITE, COLOR_WHITE);
+  init_pair(2, COLOR_BLACK, COLOR_BLACK);
+  init_pair(3, COLOR_RED, COLOR_RED);
+  init_pair(4, COLOR_GREEN, COLOR_GREEN);
+  init_pair(5, COLOR_WHITE, COLOR_GREEN);
+}
+
 int main() {
-  // Seed random number generator with current time
   srand(time(NULL));
 
   Maze maze;
 
-  initscr();
-  noecho();
-  curs_set(FALSE);
+  init_ncurses();
 
-  initialize_maze(&maze);
-  display_maze(&maze);
+  char restart;
+  do {
+    initialize_maze(&maze);
+    display_maze(&maze);
 
-  char generate;
-  int valid = 0;
+    char generate;
+    int valid = 0;
 
-  while (!valid) {
-    mvprintw(0, ROWS + 1, "Select the maze generation algorithm:\n");
-    mvprintw(0, ROWS + 2, "B/b: Binary Tree, ");
-    mvprintw(20, ROWS + 2, "R/r: Resursive Backtracking,\n");
-    mvprintw(0, ROWS + 3, "P/p: Prim's Algorithm, ");
-    mvprintw(20, ROWS + 3, "K/k: Kruskal's Algorithm\n");
-    mvprintw(0, ROWS + 4, "Make your choice and press enter: ");
+    while (!valid) {
+      mvprintw(ROWS, 0, "Select the maze generation algorithm:\n");
+      mvprintw(ROWS + 1, 0, "B/b: Binary Tree, ");
+      mvprintw(ROWS + 1, 25, "R/r: Resursive Backtracking,\n");
+      mvprintw(ROWS + 2, 0, "P/p: Prim's Algorithm, ");
+      mvprintw(ROWS + 2, 25, "K/k: Kruskal's Algorithm\n");
+      mvprintw(ROWS + 3, 0, "Make your choice and press enter: ");
+      refresh(); // Ensure the prompt is displayed
 
-    generate = getchar();
-    while (getchar() != '\n')
-      ;
+      echo();
+      generate = getch();
+      noecho();
 
-    switch (generate) {
-    case 'B':
-    case 'b':
-      binary_tree(&maze);
-      valid = 1;
-      break;
-    case 'R':
-    case 'r':
-      recursive_backtracking(&maze, maze.start.row, maze.start.col);
-      valid = 1;
-      break;
-    case 'P':
-    case 'p':
-      prim(&maze);
-      valid = 1;
-      break;
-    case 'K':
-    case 'k':
-      kruskal(&maze);
-      valid = 1;
-      break;
-    default:
-      mvprintw(0, ROWS + 5, "Invalid Choice\n");
-      break;
+      while (getch() != '\n')
+        ;
+
+      switch (generate) {
+      case 'B':
+      case 'b':
+        binary_tree(&maze);
+        valid = 1;
+        break;
+      case 'R':
+      case 'r':
+        recursive_backtracking(&maze, maze.start.row, maze.start.col);
+        valid = 1;
+        break;
+      case 'P':
+      case 'p':
+        prim(&maze);
+        valid = 1;
+        break;
+      case 'K':
+      case 'k':
+        kruskal(&maze);
+        valid = 1;
+        break;
+      default:
+        mvprintw(ROWS + 4, 0, "Invalid Choice, Try Again\n");
+        refresh();
+        break;
+      }
     }
-  }
 
-  // Set endpoint after generation to ensure that it is reachable
-  set_end_point(&maze);
+    set_end_point(&maze);
+    maze.grid[maze.start.row][maze.start.col] = START;
+    display_maze(&maze);
 
-  // Set start point on grid
-  maze.grid[maze.start.row][maze.start.col] = START;
-  system("clear"); // Clear screen before displaying
-  display_maze(&maze);
+    char pathfind;
+    valid = 0;
 
-  char pathfind;
-  valid = 0;
+    while (!valid) {
+      mvprintw(ROWS, 0, "Select the maze pathfinding algorithm:\n");
+      mvprintw(ROWS + 1, 0, "B/b: Breadth First Search, ");
+      mvprintw(ROWS + 1, 30, "D/d: Depth First Search\n");
+      mvprintw(ROWS + 2, 0, "Make your choice and press enter: ");
+      refresh(); // Ensure the prompt is displayed
 
-  while (!valid) {
-    mvprintw(0, ROWS + 1, "Select the maze pathfinding algorithm:\n");
-    mvprintw(0, ROWS + 2, "B/b: Breadth First Search, ");
-    mvprintw(20, ROWS + 2, "D/d: Depth First Search\n");
-    mvprintw(0, ROWS + 3, "Make your choice and press enter: ");
+      echo();
+      pathfind = getch();
+      noecho();
+      while (getch() != '\n')
+        ;
 
-    pathfind = getchar();
-    while (getchar() != '\n')
-      ;
-
-    switch (pathfind) {
-    case 'B':
-    case 'b':
-      bfs(&maze);
-      valid = 1;
-      break;
-    case 'D':
-    case 'd':
-      dfs(&maze, maze.start.row, maze.start.col);
-      valid = 1;
-      break;
-    default:
-      mvprintw(0, ROWS + 4, "Invalid Choice\n");
-      break;
+      switch (pathfind) {
+      case 'B':
+      case 'b':
+        bfs(&maze);
+        valid = 1;
+        break;
+      case 'D':
+      case 'd':
+        dfs(&maze, maze.start.row, maze.start.col);
+        valid = 1;
+        break;
+      default:
+        mvprintw(ROWS + 3, 0, "Invalid Choice, Try Again\n");
+        refresh();
+        break;
+      }
     }
-  }
 
-  refresh();
-  display_maze(&maze);
+    display_maze(&maze);
+
+    // Wait for the user to press 'q' to quit or 'r' to restart
+    mvprintw(ROWS, 0, "Press 'q' to quit or 'r' to restart.");
+    refresh();
+
+    do {
+      restart = getch();
+    } while (restart != 'q' && restart != 'r');
+
+  } while (restart == 'r');
+
   endwin();
   return 0;
 }

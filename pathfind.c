@@ -7,12 +7,6 @@
 
 int endpoint_found = 0;
 
-/*
-pathfinding algorithms:
-    - dfs
-    - bfs
-*/
-
 // Recusive depth first search to solve the maze
 void dfs(Maze *maze, int row, int col) {
 

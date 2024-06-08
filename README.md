@@ -4,6 +4,7 @@
 
 ## Features
 
+- Written in C
 - Takes user input to select from 4 maze generation algorithms
 - Uses DFS or BFS to solve the maze
 
@@ -20,3 +21,6 @@ To use the program, compile the source code and run the executable in your termi
 `./termaze`
 
 ## Example
+
+![Generate Maze](maze_generated.png)
+![Solved Maze](maze_solved.png)

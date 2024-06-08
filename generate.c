@@ -97,6 +97,8 @@ void remove_edge(Edge edges[], int *edge_count, int index) {
 }
 
 // Randomlize Prim's algorithm which selects random edge from set to carve maze
+// Randomly selects an edge between a cell in the maze and one not in until all
+// cells are part of the maze
 void prim(Maze *maze) {
 
   Point start = {maze->start.row, maze->start.col};
@@ -200,6 +202,8 @@ void shuffle_edges(Edge edges[], int edge_count) {
 }
 
 // Randomized Kruskal's algorithm selecting random edges to carve maze
+// Randomly selects edge and removes wall if connecting two sets until
+// all sets are connected
 void kruskal(Maze *maze) {
 
   // Initialize edges
